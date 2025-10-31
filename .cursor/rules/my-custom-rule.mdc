@@ -1,0 +1,81 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# --- VEHICLE COUNTING SYSTEM: RULE & PARAMETER SET ---
+
+RuleSet:
+  DocumentName: "Vehicle Counting System - Logical Rules"
+  Version: 1.0
+  CorePrinciple: "A unique ID assigned to a vehicle is counted EXACTLY ONCE, ONLY the FIRST TIME it crosses the virtual line."
+
+#-----------------------------------------------------------
+# SECTION 1: SYSTEM CONFIGURATION
+#-----------------------------------------------------------
+Configuration:
+  Model:
+    File: 'yolov8n.pt'
+    Description: 'The base model to be used for object detection.'
+
+  ConfidenceThreshold:
+    Value: 0.60
+    Rule: 'Detections below this confidence score are considered invalid.'
+
+  TargetClasses:
+    List: [car, motorcycle, bus, truck]
+    Rule: 'Only objects belonging to these classes will be included in the count.'
+
+  CountingLine:
+    Axis: 'Y'
+    Position: 360 # In pixels
+    Rule: 'The virtual boundary that triggers the count.'
+
+#-----------------------------------------------------------
+# SECTION 2: DETECTION & TRACKING LOGIC
+#-----------------------------------------------------------
+DetectionAndTracking:
+  ObjectTracking:
+    Requirement: 'Mandatory'
+    Rule: 'Each valid object must be assigned a persistent and unique "Track ID" across frames.'
+
+  ValidationCheck:
+    Rule: 'To be processed, an object must pass both the "ConfidenceThreshold" and "TargetClasses" rules.'
+    
+#-----------------------------------------------------------
+# SECTION 3: COUNTING LOGIC
+#-----------------------------------------------------------
+CountingMechanism:
+  Trigger:
+    Condition: "When the Y-coordinate of an object's center point crosses the 'CountingLine' position."
+    Tolerance: ' +/- 10 pixels'
+
+  Uniqueness:
+    Mechanism: 'A record of all previously counted "Track IDs" is maintained in a list (Set).'
+    Rule: 'Even if the trigger condition is met, no action is taken if the object''s "Track ID" is already in this record.'
+
+  CountAction:
+    If: 'The "Trigger" condition is met AND the "Uniqueness" rule is passed'
+    Then:
+      - 'The total counter value is incremented by "1".'
+      - 'The object''s "Track ID" is added to the list of counted IDs.'
+
+#-----------------------------------------------------------
+# SECTION 4: VISUALIZATION
+#-----------------------------------------------------------
+Visualization:
+  BoundingBox:
+    Rule: 'A box is drawn around each valid object.'
+    Color: 'Green'
+  
+  Label:
+    Content: ['Track ID', 'Class Name', 'Confidence Score']
+    Rule: 'A label containing this information is placed above each bounding box.'
+
+  CountingLineDisplay:
+    Rule: 'The counting line from the configuration is displayed on the screen.'
+    Color: 'Red'
+
+  TotalCounterDisplay:
+    Position: 'Top-Left Corner'
+    Rule: 'The current total vehicle count is persistently displayed on the screen.'

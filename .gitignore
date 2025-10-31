@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+ENV/
+.vscode/
+.idea/
+
+# OS
+*.DS_Store
+Thumbs.db
+
+# Data / Large files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.pt
+*.onnx
+*.engine
+*.bin
+
+# Build / logs
+dist/
+build/
+*.log
+
+
